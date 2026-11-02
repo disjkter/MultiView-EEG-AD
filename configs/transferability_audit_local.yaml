@@ -1,0 +1,70 @@
+sources:
+  - name: CAUEEG
+    data_dir: CAUEEG_processed_19ch_ad_vs_hc_1s_lead
+    split_file: outputs/subject_splits/CAUEEG_processed_19ch_ad_vs_hc_1s_lead_seed2026.json
+    checkpoint: outputs/source_models_local_lossselect/CAUEEG_seed2026/best_model.pth
+    selection_metric: loss
+  - name: ADFSU
+    data_dir: ADFSU_processed_19ch_1s_v2
+    split_file: outputs/subject_splits_adfsu_v2/ADFSU_processed_19ch_1s_v2_seed2026.json
+    checkpoint: outputs/source_models_local_lossselect/ADFSU_seed2026/best_model.pth
+    selection_metric: loss
+  - name: ADSZ
+    data_dir: ADSZ_processed_19ch_1s_v3
+    split_file: outputs/subject_splits_adsz_v3/ADSZ_processed_19ch_1s_v3_seed2026.json
+    checkpoint: outputs/source_models_local_lossselect/ADSZ_seed2026/best_model.pth
+    selection_metric: loss
+
+targets:
+  - name: CAUEEG
+    data_dir: CAUEEG_processed_19ch_ad_vs_hc_1s_lead
+    split_file: outputs/subject_splits/CAUEEG_processed_19ch_ad_vs_hc_1s_lead_seed2026.json
+  - name: ADFSU
+    data_dir: ADFSU_processed_19ch_1s_v2
+    split_file: outputs/subject_splits_adfsu_v2/ADFSU_processed_19ch_1s_v2_seed2026.json
+  - name: ADSZ
+    data_dir: ADSZ_processed_19ch_1s_v3
+    split_file: outputs/subject_splits_adsz_v3/ADSZ_processed_19ch_1s_v3_seed2026.json
+
+graph_out_dim: 256
+temporal_out_dim: 256
+classifier_dropout: 0.6
+graph_num_neighbors: 4
+support_subjects_per_class: 4
+max_segments_per_subject: 20
+gradient_batches: 4
+batch_size: 64
+seed: 2026
+device: auto
+output_prefix: outputs/transferability_audit_local_lossselect/seed2026
+
+source_training:
+  epochs: 50
+  batch_size: 64
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  patience: 8
+  max_segments_per_subject: 100
+  graph_out_dim: 256
+  temporal_out_dim: 256
+  graph_num_neighbors: 4
+  classifier_dropout: 0.6
+  selection_metric: loss
+
+validation_output_dir: outputs/transferability_validation_local_lossselect
+validation_training:
+  epochs: 30
+  batch_size: 32
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  patience: 8
+  train_segments_per_subject: 20
+  eval_segments_per_subject: 100
+  graph_out_dim: 256
+  temporal_out_dim: 256
+  graph_num_neighbors: 4
+  classifier_dropout: 0.6
+  selection_metric: loss
+  checkpoint_scope: encoders
+  tune_threshold: true
+  threshold_objective: balanced_acc

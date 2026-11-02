@@ -1,0 +1,42 @@
+experiment_name: participant_care_v2
+
+domains:
+  CAUEEG: CAUEEG_processed_19ch_ad_vs_hc_1s_lead
+  ds004504: ds004504_processed_19ch_1s_v2
+  ADSZ: ADSZ_processed_19ch_1s_v3
+
+common:
+  epochs: 30
+  batch_size: 32
+  lr: 0.001
+  weight_decay: 0.0001
+  patience: 8
+  max_source_subjects_per_class: 50
+  max_segments_per_subject: 20
+  max_target_segments_per_subject: 20
+  threshold_objective: balanced_acc
+  domain_balanced_batches: true
+  tune_threshold: true
+  care_calibration_bandwidth: 0.1
+  care_calibration_equalization_weight: 1.0
+  participant_subjects_per_domain_class: 4
+  participant_windows_per_subject: 2
+
+backbones:
+  graph_temporal: {}
+
+variants:
+  participant_care:
+    method: participant_care
+    lambda_care_score: 0.05
+    lambda_care_calibration: 0.5
+    lambda_care_entropy: 0.0
+
+stages:
+  screening:
+    domains: [CAUEEG, ds004504, ADSZ]
+    targets: [CAUEEG, ds004504, ADSZ]
+    backbones: [graph_temporal]
+    variants: [participant_care]
+    seeds: [2026, 2027, 2028]
+    output_root: outputs/participant_care_screening

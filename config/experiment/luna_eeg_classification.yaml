@@ -1,0 +1,139 @@
+# 基于 LUNA 的 EEG 分类微调配置
+# LUNA 作为 backbone，用于 3 类疾病分类
+
+# 任务和数据配置
+_target_: tasks.luna_classification_task.LUNAClassificationTask
+
+# 数据模块
+data_module:
+  _target_: data_module.finetune_data_module.FinetuneDataModule
+  cfg:
+    batch_size: 16
+    num_workers: 4
+  train:
+    _target_: datasets.hdf5_dataset.HDF5Loader
+    hdf5_file: model-data/train.h5
+    squeeze: false
+    finetune: true
+    cache_size: 1500
+    use_cache: true
+  val:
+    _target_: datasets.hdf5_dataset.HDF5Loader
+    hdf5_file: model-data/val.h5
+    squeeze: false
+    finetune: true
+    cache_size: 500
+    use_cache: true
+  test:
+    _target_: datasets.hdf5_dataset.HDF5Loader
+    hdf5_file: model-data/test.h5
+    squeeze: false
+    finetune: true
+    cache_size: 500
+    use_cache: true
+
+# LUNA 分类模型配置
+model:
+  _target_: models.luna_classifier.LUNAClassifier
+  num_classes: 3                    # Alzheimer, FTD, Healthy
+  num_channels: 19                  # eeg-data 中的通道数
+  hidden_dim: 256                   # 分类头的隐藏维度
+  dropout: 0.15
+  freeze_backbone: false            # 初始化时不冻结（会在微调中控制）
+  luna_config: LUNA_base            # LUNA 模型大小: base/large/huge
+
+# 输入归一化
+input_normalization:
+  normalize: true                   # 按通道进行 z-score 归一化
+
+# 微调策略配置
+finetuning:
+  freeze_layers: false              # 是否冻结主干层
+  unfreeze_layer_count: null        # 解冻最后 N 层（null = 全部解冻）
+  layer_wise_lr_decay: false        # 是否使用分层学习率衰减
+  layer_wise_decay: 0.9             # 衰减系数
+  warmup_steps: 1000                # 预热步数
+  warmup_epochs: 5                  # 或预热周期数
+
+# 优化器配置
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 1.0e-4                        # 学习率（较低，因为是预训练模型）
+  betas: [0.9, 0.999]
+  weight_decay: 1.0e-5              # L2 正则化
+  eps: 1.0e-8
+
+# 学习率调度器
+scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingWarmRestarts
+  T_0: 50                           # 初始周期
+  T_mult: 1                         # 周期倍增因子
+  eta_min: 1.0e-6                   # 最小学习率
+
+# 损失函数
+criterion:
+  _target_: torch.nn.CrossEntropyLoss
+  weight: null                      # 可设置为 tensor([w0, w1, w2]) 处理类别不平衡
+
+# 训练器配置
+trainer:
+  max_epochs: 100
+  num_nodes: 1
+  devices: 1
+  accelerator: gpu                  # 或 "cpu" 如果没有 GPU
+  strategy: auto
+  enable_progress_bar: true
+  log_every_n_steps: 10
+  check_val_every_n_epoch: 1
+  precision: 16                     # 混合精度训练（加快速度，降低内存）
+  gradient_clip_val: 1.0            # 梯度裁剪防止梯度爆炸
+
+# 回调函数
+callbacks:
+  # 模型检查点
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    dirpath: checkpoints/luna_classification
+    filename: luna-eeg-{epoch:02d}-{val_f1_score:.4f}
+    monitor: val_f1_score           # 监控指标
+    mode: max                        # max（F1） 或 min（损失）
+    save_top_k: 3                    # 保存最佳的 3 个
+    save_last: true                 # 也保存最后一个
+    verbose: true
+  
+  # 早停策略
+  early_stopping:
+    _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: val_loss
+    patience: 25                     # 25 个 epoch 没有改进就停止
+    mode: min
+    verbose: true
+    check_finite: true              # 检查 loss 是否为 NaN/Inf
+  
+  # 学习率监控
+  lr_monitor:
+    _target_: pytorch_lightning.callbacks.LearningRateMonitor
+    logging_interval: epoch
+  
+  # 进度条
+  progress_bar:
+    _target_: pytorch_lightning.callbacks.TQDMProgressBar
+    refresh_rate: 10
+
+# 日志和输出
+io:
+  base_output_path: tb_logs
+  version: 0
+
+# 其他设置
+seed: 42
+tag: luna_eeg_classification
+resume: false
+training: true
+
+# 预训练权重路径（如果需要）
+# 可以在命令行覆盖：
+# python run_train.py +experiment=luna_eeg_classification \
+#   pretrained_safetensors_path=checkpoints/LUNA/Base/luna_base.safetensors
+pretrained_safetensors_path: null
+pretrained_checkpoint_path: null

@@ -1,0 +1,171 @@
+# Multi-Disease Classification with LUNA Base Model
+# 基于LUNA模型的多疾病分类配置
+
+defaults:
+  - /model: LUNA_base  # 使用LUNA作为基础模型
+  - /data_module: finetune_data_module
+  - /task: finetune_task_LUNA  # 使用LUNA任务
+  - /criterion: finetune_criterion
+  - /scheduler: cosine
+  - _self_
+
+# 实验配置
+experiment_name: luna_multi_disease_${now:%Y-%m-%d_%H-%M-%S}
+seed: 42
+
+# 模型配置 - 基于LUNA的多任务架构
+model:
+  _target_: models.LUNA.MultiDiseaseLUNA
+  pretrained_safetensors_path: ???  # LUNA预训练权重路径
+  
+  # LUNA编码器配置
+  encoder:
+    _target_: models.LUNA.LUNAEncoder
+    embed_dim: 384
+    depth: 12
+    num_heads: 6
+    mlp_ratio: 4.0
+    use_channel_unification: true
+    
+  # 疾病专属特征模块
+  disease_specific_modules:
+    num_diseases: 6  # 疾病种类数
+    embed_dim: 192
+    depth: 4
+    num_heads: 4
+    channel_groups: 3  # 通道分组数
+    
+  # 特征融合配置
+  feature_fusion:
+    method: "query_based_fusion"  # 基于查询的融合
+    num_queries: 8
+    dropout: 0.1
+    
+  # 分类头配置
+  classifier:
+    hidden_dims: [768, 384, 192]
+    num_classes: 7  # 健康 + 6种疾病
+    dropout: 0.3
+
+# 数据模块配置 - HDF5格式
+data_module:
+  _target_: data_module.LUNAMultiDiseaseDataModule
+  name: "luna_multi_disease"
+  cfg:
+    batch_size: 16
+    num_workers: 4
+    # HDF5数据配置
+    hdf5_config:
+      chunk_size: 1000
+      compression: "gzip"
+      compression_opts: 9
+    class_balancing: "weighted_sampler"
+  train_val_split_ratio: 0.8
+  
+  # 疾病标签映射
+  disease_labels:
+    healthy: 0
+    epilepsy: 1
+    adhd: 2
+    autism: 3
+    alzheimer: 4
+    parkinson: 5
+    depression: 6
+
+# 训练任务配置
+task:
+  _target_: tasks.LUNAMultiDiseaseTask
+  
+  # LUNA特定配置
+  masking:
+    patch_size: [4, 32]  # [通道块大小, 时间块大小]
+    masking_ratio: 0.4
+    unmasked_loss_coeff: 0.1
+    
+  # 多任务损失
+  criterion:
+    # 分类损失
+    classification_loss:
+      _target_: torch.nn.CrossEntropyLoss
+      weight: "balanced"
+      
+    # 特征一致性损失
+    feature_consistency_loss:
+      _target_: criterion.FeatureConsistencyLoss
+      lambda_consistency: 0.1
+      
+    # 通道位置感知损失
+    position_aware_loss:
+      _target_: criterion.PositionAwareLoss
+      lambda_position: 0.05
+
+# 查询特化配置（LUNA特色）
+query_specialization_criterion:
+  _target_: criterion.QuerySpecializationCriterion
+  lambda_qsc: 0.1
+  num_queries: 8
+
+# 优化器配置
+optimizer:
+  optim: AdamW
+  lr: 3e-5  # LUNA微调学习率
+  weight_decay: 0.05
+  
+  # LUNA特定的参数分组
+  param_groups:
+    encoder: 1e-5        # 编码器：最小学习率
+    channel_unifier: 3e-5 # 通道统一模块：中等学习率
+    disease_modules: 5e-5 # 疾病模块：较高学习率
+    classifier: 1e-4     # 分类头：最大学习率
+
+# 训练器配置
+trainer:
+  max_epochs: 120
+  accelerator: gpu
+  devices: 1
+  precision: 16
+  gradient_clip_val: 1.0
+  accumulate_grad_batches: 2
+  
+  # LUNA特定回调
+  callbacks:
+    - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+      monitor: "val_weighted_f1"
+      mode: "max"
+      save_top_k: 5
+      filename: "luna-multi-disease-{epoch:02d}-{val_weighted_f1:.4f}"
+      
+    - _target_: pytorch_lightning.callbacks.EarlyStopping
+      monitor: "val_weighted_f1"
+      mode: "max"
+      patience: 15
+      
+    - _target_: pytorch_lightning.callbacks.LearningRateMonitor
+      logging_interval: "step"
+      
+    - _target_: callbacks.ChannelUnificationMonitor
+      log_interval: 100
+
+# 评估指标
+metrics:
+  - accuracy
+  - weighted_f1
+  - macro_f1
+  - macro_precision
+  - macro_recall
+  - per_class_accuracy
+  - auc_roc_per_class
+
+# 可视化配置
+visualization:
+  attention_maps: true
+  channel_unification_weights: true  # LUNA特色：通道统一权重
+  feature_separation: true
+  confusion_matrix: true
+
+# 日志配置
+logger:
+  _target_: pytorch_lightning.loggers.TensorBoardLogger
+  save_dir: "./logs"
+  name: "luna_multi_disease"
+  default_hp_metric: false

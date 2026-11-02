@@ -1,0 +1,21 @@
+__pycache__/
+*.npy
+*.pth
+*.ckpt
+checkpoints/
+outputs/
+tb_logs/
+.vscode/
+model-data/
+model_data/
+eeg-data/
+# 忽略虚拟环境
+venv/
+env/
+
+# 忽略数据集和模型权重
+dataset/
+models/
+*.pth
+*.h5
+*.csv

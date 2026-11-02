@@ -1,0 +1,23 @@
+# Shared defaults for training-stage feature-fusion ablations.
+epochs: 30
+batch_size: 64
+lr: 0.001
+weight_decay: 0.0001
+patience: 6
+use_ea: false
+disable_class_weights: false
+loss_type: ce
+tune_threshold: true
+threshold_objective: balanced_acc
+selection_metric: loss
+model_type: stage_fusion
+fusion_base_model: dual_stream
+fusion_mode: learned_scalar
+gate_hidden_dim: 64
+unfreeze_fusion_encoders: false
+graph_num_neighbors: 4
+spatial_out_dim: 256
+temporal_out_dim: 256
+classifier_dropout: 0.2
+use_neuro_prior: false
+augment_train: false

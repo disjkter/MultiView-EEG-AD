@@ -1,0 +1,34 @@
+data_dirs:
+  - BrainLat19_pretrain_19ch_1s_lead
+  - auditory40hz_processed_19ch_1s_lead
+  - ADFSU_processed_19ch_1s_v2
+  - ADSZ_processed_19ch_1s_v3
+source_names:
+  - BrainLat19
+  - Auditory40Hz
+  - ADFSU
+  - ADSZ
+sampling_mode: manual
+# Approximate square-root dataset-size weighting to limit both dominance and oversampling.
+source_weights:
+  - 0.70
+  - 0.17
+  - 0.08
+  - 0.05
+samples_per_epoch: 20000
+output_dir: outputs/pretrain_graph_temporal_mae_multisource
+checkpoint_out: checkpoints/graph_temporal_mae_multisource.pth
+epochs: 50
+batch_size: 64
+lr: 0.001
+weight_decay: 0.0001
+node_mask_ratio: 0.3
+time_mask_ratio: 0.3
+graph_out_dim: 256
+temporal_out_dim: 256
+decoder_hidden_dim: 128
+graph_num_neighbors: 4
+classifier_dropout: 0.3
+gradient_clip: 1.0
+seed: 2026
+device: auto

@@ -1,0 +1,12 @@
+input_dir: outputs/phase1_graphs
+output_dir: outputs/phase2_pretrain
+seed: 2026
+epochs: 2
+batch_size: 32
+learning_rate: 0.001
+hidden_dim: 128
+mask_ratio: 0.3
+num_workers: 0
+device: cpu
+save_reconstruction_samples: 8
+save_reconstruction_plot: true

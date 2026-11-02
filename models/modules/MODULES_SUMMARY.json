@@ -1,0 +1,88 @@
+{
+  "channel_embeddings.py": {
+    "size": 4222,
+    "lines": 136,
+    "classes": [
+      "ChannelEmbeddings"
+    ],
+    "funcs": [
+      "get_channel_indices",
+      "get_channel_names",
+      "get_channel_locations",
+      "__init__",
+      "forward",
+      "initialize_weights"
+    ],
+    "imports": [
+      "import torch",
+      "import torch.nn as nn",
+      "from torcheeg.datasets.constants import SEED_CHANNEL_LIST",
+      "import mne"
+    ]
+  },
+  "channel_location_embedder.py": {
+    "size": 3027,
+    "lines": 68,
+    "classes": [
+      "ChannelLocationEmbedder"
+    ],
+    "funcs": [
+      "__init__",
+      "initialize_weights",
+      "_init_weights",
+      "forward"
+    ],
+    "imports": [
+      "import torch",
+      "import torch.nn as nn"
+    ]
+  },
+  "frequency_embedder.py": {
+    "size": 3430,
+    "lines": 64,
+    "classes": [
+      "FrequencyFeatureEmbedder",
+      "takes"
+    ],
+    "funcs": [
+      "__init__",
+      "forward"
+    ],
+    "imports": [
+      "import torch",
+      "import torch.nn as nn",
+      "import torch.nn.functional as F",
+      "import torch.fft as fft",
+      "from einops import rearrange",
+      "from timm.layers import Mlp"
+    ]
+  },
+  "rope_transformer_encoder_block.py": {
+    "size": 5143,
+    "lines": 142,
+    "classes": [
+      "RotarySelfAttentionBlock",
+      "GEGLU",
+      "FeedForwardBlock",
+      "RotaryTransformerBlock"
+    ],
+    "funcs": [
+      "__init__",
+      "forward",
+      "__init__",
+      "forward",
+      "__init__",
+      "forward",
+      "__init__",
+      "forward"
+    ],
+    "imports": [
+      "from rotary_embedding_torch import RotaryEmbedding",
+      "import torch",
+      "import torch.nn as nn",
+      "from einops import rearrange",
+      "import torch",
+      "from timm.layers import DropPath"
+    ]
+  }
+}

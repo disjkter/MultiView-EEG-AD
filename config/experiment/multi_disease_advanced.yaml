@@ -1,0 +1,163 @@
+# Multi-Disease EEG Classification with Feature Disentanglement
+# 多疾病EEG分类与特征解耦配置
+
+defaults:
+  - /model: FEMBA_finetune  # 基于FEMBA的多任务架构
+  - /data_module: finetune_data_module
+  - /task: finetune_task
+  - /criterion: finetune_criterion
+  - /scheduler: cosine
+  - _self_
+
+# 实验配置
+experiment_name: multi_disease_eeg_${now:%Y-%m-%d_%H-%M-%S}
+seed: 42
+
+# 模型配置 - 多任务架构
+model:
+  _target_: models.FEMBA.MultiDiseaseClassifier
+  pretrained_safetensors_path: ???  # 预训练权重路径
+  
+  # 通用特征提取器配置
+  shared_encoder:
+    _target_: models.FEMBA.FEMBAEncoder
+    embed_dim: 256
+    depth: 12
+    num_heads: 8
+    mlp_ratio: 4.0
+    
+  # 疾病专属特征提取器
+  disease_specific_encoders:
+    num_diseases: 5  # 疾病种类数量
+    embed_dim: 128
+    depth: 6
+    num_heads: 4
+    
+  # 特征融合模块
+  feature_fusion:
+    fusion_method: "attention_weighted"  # 注意力加权融合
+    dropout: 0.1
+    
+  # 分类头
+  classifier:
+    hidden_dims: [512, 256, 128]
+    num_classes: 6  # 健康 + 5种疾病
+    dropout: 0.3
+
+# 数据模块配置
+data_module:
+  _target_: data_module.MultiDiseaseDataModule
+  name: "multi_disease_data"
+  cfg:
+    batch_size: 12
+    num_workers: 4
+    # 支持不平衡数据集
+    class_balancing: "weighted_sampler"
+  train_val_split_ratio: 0.8
+  # 多疾病标签配置
+  disease_labels:
+    healthy: 0
+    epilepsy: 1
+    adhd: 2
+    autism: 3
+    alzheimer: 4
+    depression: 5
+
+# 训练任务配置
+task:
+  _target_: tasks.MultiDiseaseClassificationTask
+  
+  # 多任务损失函数
+  criterion:
+    # 通用特征损失
+    shared_feature_loss:
+      _target_: torch.nn.CosineEmbeddingLoss
+      margin: 0.2
+      
+    # 疾病专属特征损失
+    disease_specific_loss:
+      _target_: torch.nn.CrossEntropyLoss
+      weight: "balanced"  # 自动平衡类别权重
+      
+    # 总体分类损失
+    classification_loss:
+      _target_: torch.nn.CrossEntropyLoss
+      
+    # 特征正交性损失（鼓励特征解耦）
+    orthogonality_loss:
+      _target_: criterion.OrthogonalityLoss
+      lambda_orth: 0.1
+
+# 优化器配置
+optimizer:
+  optim: AdamW
+  lr: 5e-5  # 较小的学习率用于微调
+  weight_decay: 0.01
+  
+  # 分层学习率
+  param_groups:
+    shared_encoder: 1e-5     # 通用特征编码器：最小学习率
+    disease_specific: 5e-5   # 疾病专属编码器：中等学习率
+    classifier: 1e-4         # 分类头：最大学习率
+
+# 训练器配置
+trainer:
+  max_epochs: 150
+  accelerator: gpu
+  devices: 1
+  precision: 16
+  gradient_clip_val: 1.0
+  accumulate_grad_batches: 4
+  
+  # 多任务回调
+  callbacks:
+    - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+      monitor: "val_macro_f1"
+      mode: "max"
+      save_top_k: 5
+      filename: "multi-disease-{epoch:02d}-{val_macro_f1:.4f}"
+      
+    - _target_: pytorch_lightning.callbacks.EarlyStopping
+      monitor: "val_macro_f1"
+      mode: "max"
+      patience: 20
+      
+    - _target_: pytorch_lightning.callbacks.LearningRateMonitor
+      logging_interval: "step"
+      
+    - _target_: callbacks.FeatureDisentanglementMonitor
+      log_interval: 50  # 每50步记录特征解耦度
+
+# 评估指标
+metrics:
+  # 基础指标
+  - accuracy
+  - macro_f1
+  - macro_precision
+  - macro_recall
+  - weighted_f1
+  
+  # 疾病特异性指标
+  - per_class_accuracy
+  - auc_roc_per_class
+  - sensitivity_specificity
+  
+  # 特征质量指标
+  - feature_separation_score  # 特征分离度
+  - intra_class_similarity    # 类内相似度
+  - inter_class_distance      # 类间距离
+
+# 日志配置
+logger:
+  _target_: pytorch_lightning.loggers.TensorBoardLogger
+  save_dir: "./logs"
+  name: "multi_disease_eeg"
+  default_hp_metric: false
+
+# 可视化配置
+visualization:
+  attention_maps: true      # 注意力热力图
+  feature_tsne: true        # t-SNE特征可视化
+  confusion_matrix: true    # 混淆矩阵
+  roc_curves: true          # ROC曲线
+```

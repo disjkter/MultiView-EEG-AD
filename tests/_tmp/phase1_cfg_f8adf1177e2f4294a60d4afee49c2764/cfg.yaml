@@ -1,0 +1,5 @@
+eeg_root: custom_eeg
+out_dir: custom_out
+window_seconds: 2.0
+graph_method: plv
+absolute_adjacency: true

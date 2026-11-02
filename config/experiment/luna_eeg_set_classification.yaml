@@ -1,0 +1,102 @@
+_target_: tasks.luna_classification_task.LUNAClassificationTask
+
+seed: 42
+tag: luna_eeg_set
+
+# 直接从 .set 文件加载，无需 HDF5 转换
+data_module:
+  _target_: datasets.eeg_set_dataset.EEGSetDataModule
+  eeg_data_path: eeg-data
+  batch_size: 16
+  num_workers: 4
+  normalize: true
+  cache_size: 100
+  use_cache: true
+
+model:
+  _target_: models.luna_classifier.LUNAClassifier
+  num_classes: 3
+  num_channels: 19
+  hidden_dim: 256
+  dropout: 0.15
+  freeze_backbone: false
+  luna_config: LUNA_base
+
+input_normalization:
+  normalize: true
+
+finetuning:
+  freeze_layers: false
+  unfreeze_layer_count: null
+  layer_wise_lr_decay: false
+  layer_wise_decay: 0.9
+  warmup_steps: 1000
+  warmup_epochs: 5
+
+optimizer:
+  _target_: torch.optim.AdamW
+  lr: 0.0001
+  betas:
+    - 0.9
+    - 0.999
+  weight_decay: 1.0e-05
+  eps: 1.0e-08
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingWarmRestarts
+  T_0: 50
+  T_mult: 1
+  eta_min: 1.0e-06
+
+criterion:
+  _target_: torch.nn.CrossEntropyLoss
+  weight: null
+
+trainer:
+  max_epochs: 100
+  num_nodes: 1
+  devices: 1
+  accelerator: gpu
+  strategy: auto
+  enable_progress_bar: true
+  log_every_n_steps: 10
+  check_val_every_n_epoch: 1
+  precision: 16
+  gradient_clip_val: 1.0
+
+io:
+  base_output_path: tb_logs
+  checkpoint_dirpath: checkpoints
+  version: 0
+
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    dirpath: checkpoints/luna_classification_set
+    filename: luna-eeg-{epoch:02d}-{val_f1_score:.4f}
+    monitor: val_f1_score
+    mode: max
+    save_top_k: 3
+    save_last: true
+    verbose: true
+
+  early_stopping:
+    _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: val_loss
+    patience: 25
+    mode: min
+    verbose: true
+    check_finite: true
+
+  lr_monitor:
+    _target_: pytorch_lightning.callbacks.LearningRateMonitor
+    logging_interval: epoch
+
+  progress_bar:
+    _target_: pytorch_lightning.callbacks.TQDMProgressBar
+    refresh_rate: 10
+
+resume: false
+training: true
+pretrained_safetensors_path: null
+pretrained_checkpoint_path: null

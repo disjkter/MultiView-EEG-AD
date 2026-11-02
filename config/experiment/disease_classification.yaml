@@ -1,0 +1,83 @@
+# Disease Classification Fine-tuning Configuration
+# 适用于癫痫、睡眠障碍等疾病检测任务
+
+defaults:
+  - /model: FEMBA_finetune  # 或 LUNA_base
+  - /data_module: finetune_data_module
+  - /task: finetune_task
+  - /criterion: finetune_criterion
+  - /scheduler: cosine
+  - _self_
+
+# 实验配置
+experiment_name: disease_classification_${now:%Y-%m-%d_%H-%M-%S}
+seed: 42
+
+# 模型配置
+model:
+  # 预训练权重路径
+  pretrained_safetensors_path: ???  # 需要设置为您的预训练模型路径
+  # 分类头配置
+  num_classes: 2  # 二分类：健康 vs 疾病
+  # 可根据具体疾病调整类别数
+  # num_classes: 3  # 三分类：健康 vs 癫痫 vs 其他
+  
+# 数据模块配置
+data_module:
+  _target_: data_module.FinetuneDataModule
+  name: "disease_data"  # 您的数据集名称
+  cfg:
+    batch_size: 16
+    num_workers: 4
+  train_val_split_ratio: 0.8
+
+# 训练任务配置
+task:
+  _target_: tasks.FinetuneTask
+  # 损失函数
+  criterion:
+    _target_: torch.nn.CrossEntropyLoss
+  # 评估指标
+  metrics:
+    - accuracy
+    - f1_score
+    - precision
+    - recall
+
+# 优化器配置
+optimizer:
+  optim: AdamW
+  lr: 1e-4  # 微调学习率通常较小
+  weight_decay: 0.01
+
+# 训练器配置
+trainer:
+  max_epochs: 100
+  accelerator: gpu
+  devices: 1
+  precision: 16  # 混合精度训练
+  gradient_clip_val: 1.0
+  accumulate_grad_batches: 2
+  
+  # 回调函数
+  callbacks:
+    - _target_: pytorch_lightning.callbacks.ModelCheckpoint
+      monitor: "val_f1_score"
+      mode: "max"
+      save_top_k: 3
+      filename: "disease-classifier-{epoch:02d}-{val_f1_score:.4f}"
+      
+    - _target_: pytorch_lightning.callbacks.EarlyStopping
+      monitor: "val_f1_score"
+      mode: "max"
+      patience: 15
+      
+    - _target_: pytorch_lightning.callbacks.LearningRateMonitor
+      logging_interval: "step"
+
+# 日志配置
+logger:
+  _target_: pytorch_lightning.loggers.TensorBoardLogger
+  save_dir: "./logs"
+  name: "disease_classification"
+```

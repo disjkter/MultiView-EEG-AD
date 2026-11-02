@@ -1,0 +1,68 @@
+﻿sources:
+  - name: CAUEEG
+    data_dir: CAUEEG_processed_19ch_ad_vs_hc_1s_lead
+    split_file: outputs/subject_splits/CAUEEG_processed_19ch_ad_vs_hc_1s_lead_seed2033.json
+    checkpoint: outputs/source_models_local_lossselect/CAUEEG_seed2033/best_model.pth
+    selection_metric: loss
+  - name: ADFSU
+    data_dir: ADFSU_processed_19ch_1s_v2
+    split_file: outputs/subject_splits_adfsu_v2/ADFSU_processed_19ch_1s_v2_seed2033.json
+    checkpoint: outputs/source_models_local_lossselect/ADFSU_seed2033/best_model.pth
+    selection_metric: loss
+  - name: ADSZ
+    data_dir: ADSZ_processed_19ch_1s_v3
+    split_file: outputs/subject_splits_adsz_v3/ADSZ_processed_19ch_1s_v3_seed2033.json
+    checkpoint: outputs/source_models_local_lossselect/ADSZ_seed2033/best_model.pth
+    selection_metric: loss
+
+targets:
+  - name: CAUEEG
+    data_dir: CAUEEG_processed_19ch_ad_vs_hc_1s_lead
+    split_file: outputs/subject_splits/CAUEEG_processed_19ch_ad_vs_hc_1s_lead_seed2033.json
+  - name: ADFSU
+    data_dir: ADFSU_processed_19ch_1s_v2
+    split_file: outputs/subject_splits_adfsu_v2/ADFSU_processed_19ch_1s_v2_seed2033.json
+  - name: ADSZ
+    data_dir: ADSZ_processed_19ch_1s_v3
+    split_file: outputs/subject_splits_adsz_v3/ADSZ_processed_19ch_1s_v3_seed2033.json
+
+graph_out_dim: 256
+temporal_out_dim: 256
+classifier_dropout: 0.6
+graph_num_neighbors: 4
+support_subjects_per_class: 4
+max_segments_per_subject: 20
+gradient_batches: 4
+batch_size: 64
+seed: 2033
+device: auto
+output_prefix: outputs/transferability_audit_local_lossselect/seed2033
+
+source_training:
+  epochs: 50
+  batch_size: 64
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  patience: 8
+  max_segments_per_subject: 100
+  graph_out_dim: 256
+  temporal_out_dim: 256
+  graph_num_neighbors: 4
+  classifier_dropout: 0.6
+  selection_metric: loss
+
+validation_output_dir: outputs/transferability_validation_local_lossselect_seed2033
+validation_training:
+  epochs: 30
+  batch_size: 32
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  patience: 8
+  train_segments_per_subject: 20
+  eval_segments_per_subject: 100
+  graph_out_dim: 256
+  temporal_out_dim: 256
+  graph_num_neighbors: 4
+  classifier_dropout: 0.6
+  selection_metric: loss
+

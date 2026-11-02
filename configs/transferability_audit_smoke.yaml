@@ -1,0 +1,22 @@
+sources:
+  - name: CAUEEG
+    data_dir: CAUEEG_processed_19ch_ad_vs_hc_1s_lead
+    split_file: outputs/subject_splits/CAUEEG_processed_19ch_ad_vs_hc_1s_lead_seed2026.json
+    checkpoint: outputs/pilot_graph_temporal_caueeg_seed2026_n10/best_model.pth
+
+targets:
+  - name: ADSZ
+    data_dir: ADSZ_processed_19ch_1s_v3
+    split_file: outputs/subject_splits_adsz_v3/ADSZ_processed_19ch_1s_v3_seed2026.json
+
+graph_out_dim: 256
+temporal_out_dim: 256
+classifier_dropout: 0.6
+graph_num_neighbors: 4
+support_subjects_per_class: 2
+max_segments_per_subject: 1
+gradient_batches: 1
+batch_size: 64
+seed: 2026
+device: auto
+output_prefix: outputs/_smoke_transferability/audit

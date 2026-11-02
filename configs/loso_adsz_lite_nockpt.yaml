@@ -1,0 +1,23 @@
+experiment_name: loso_adsz_lite_nockpt
+model_name: SpatialMSCNN_DualStream
+checkpoint:
+epochs: 20
+batch_size: 16
+lr: 5.0e-5
+weight_decay: 1.0e-4
+val_ratio: 0.2
+patience: 5
+seed: 2026
+use_ea: false
+linear_probe: false
+disable_class_weights: true
+tune_threshold: true
+threshold_objective: balanced_acc
+selection_metric: loss
+temperature_scaling: false
+spatial_out_dim: 64
+temporal_out_dim: 64
+spatial_hidden_channels: 32
+spatial_temporal_channels: 64
+classifier_hidden_dim: 64
+classifier_dropout: 0.7

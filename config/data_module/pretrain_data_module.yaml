@@ -1,0 +1,154 @@
+data_module:
+  _target_: 'data_module.pretrain_data_module.PretrainDataModule'
+  name: "eeg"
+  cfg:
+    num_workers: ${num_workers}
+    batch_size: ${batch_size}
+  test: null
+  train_val_split_ratio: 0.8
+  datasets:
+    demo_dataset: null
+    TUEG_22_channels_0:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_10:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_11:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_12:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_13:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_14:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_16:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_17:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_18:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_19:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_1:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_20:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_23:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_24:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_31:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_3:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_4:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_5:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_15:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_21:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_22:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_25:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_26:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_27:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_28:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_29:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_2:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_30:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
+      
+    TUEG_22_channels_6:
+      _target_: 'datasets.hdf5_dataset.HDF5Loader'
+      finetune: False
+      hdf5_file: 'e:\ProgramFiles\PythonProject\BioFoundation-main\model-data\train\train.h5'
