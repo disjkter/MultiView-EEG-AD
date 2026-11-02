@@ -1,6 +1,0 @@
-eeg_root: eeg-data
-out_dir: outputs/phase1_graphs
-window_seconds: 1.0
-stride_seconds: null
-graph_method: pearson
-absolute_adjacency: false
